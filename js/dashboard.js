@@ -28,9 +28,12 @@
     { key:"totalCenters", label:"Total Centers", icon:"building" },
     { key:"activeBatches", label:"Active Batches", icon:"layers" },
     { key:"totalEnrolled", label:"Total Enrolled", icon:"users" },
+    { key:"activeStudents", label:"In-Class (Active) Students", icon:"users", cls:"good" },
+    { key:"completedStudents", label:"Completed Students", icon:"award" },
     { key:"presentToday", label:"Students Present Today", icon:"check", cls:"good" },
     { key:"absentToday", label:"Students Absent Today", icon:"alertTriangle", cls:"warn" },
-    { key:"attendancePct", label:"Overall Attendance %", icon:"target", pct:true },
+    { key:"activeAttendancePct", label:"Attendance % (Active Batches)", icon:"target", pct:true },
+    { key:"completedAttendancePct", label:"Attendance % (Completed Batches)", icon:"target", pct:true },
     { key:"totalDropouts", label:"Total Dropouts", icon:"alertTriangle", cls:"crit" },
     { key:"lms1Completed", label:"LMS 1 Completed", icon:"bookOpen" },
     { key:"lms2Completed", label:"LMS 2 Completed", icon:"bookOpen" },
@@ -409,6 +412,105 @@
     if(values.includes(current)) el.value = current;
   }
 
+  function renderOverdueBanner(overdue){
+    const el = document.getElementById("overdue-banner-container");
+    if(!el) return;
+    if(!overdue.length){ el.innerHTML = ""; return; }
+    el.innerHTML = `<div class="overdue-banner">
+      <h4><i data-icon="alertTriangle"></i> Batch restart overdue — ${overdue.length} center(s) need attention</h4>
+      ${overdue.map(o => `<div class="overdue-row">
+        <span>${Utils.escapeHtml(o.center)} — last batch <b>${Utils.escapeHtml(o.lastBatchId)}</b> ended ${Utils.escapeHtml(o.lastBatchEnd)}</span>
+        <span class="days">${o.daysOverdue} day(s) overdue</span>
+      </div>`).join("")}
+    </div>`;
+    Icons.hydrate(el);
+  }
+
+  function teamCardHtml(roleLabel, name, center, score, rating, metaHtml){
+    return `<div class="team-card">
+      <span class="role-tag">${Utils.escapeHtml(roleLabel)}</span>
+      <h5>${Utils.escapeHtml(name || "—")}</h5>
+      <div class="hint">${Utils.escapeHtml(center || "")}</div>
+      <div class="team-score ${Utils.scoreColor(score)}">${score.toFixed(1)}</div>
+      ${Utils.starRating(rating)}
+      <div class="team-meta">${metaHtml}</div>
+    </div>`;
+  }
+
+  function renderTeamPerformance(tp){
+    const trainersEl = document.getElementById("team-grid-trainers");
+    const fieldOfficersEl = document.getElementById("team-grid-fieldofficers");
+    if(!trainersEl) return;
+
+    trainersEl.innerHTML = (tp.trainers||[]).map(t => teamCardHtml(
+      "Trainer", t.trainer, `${t.center} · ${t.batchCount} batch(es)`, t.score, t.rating,
+      `Attendance ${Utils.fmtPct(t.attendancePct)} · LMS ${Utils.fmtPct(t.lmsPct)} · Wadhwani ${Utils.fmtPct(t.wadhwaniPct)} · On-time ${Utils.fmtPct(t.onTimePct)}`
+    )).join("") || `<div class="empty-state">No trainer data yet — add a Trainer column value on your batches.</div>`;
+
+    fieldOfficersEl.innerHTML = (tp.fieldOfficers||[]).map(f => teamCardHtml(
+      "Field Officer", f.fieldOfficer, f.center, f.score, f.rating,
+      `Batch-gap score ${Utils.fmtPct(f.gapScore)}${f.daysOverdue ? ` (overdue ${f.daysOverdue}d)` : ""} · Mobilization ${Utils.fmtPct(f.mobilizationScore)}`
+    )).join("") || `<div class="empty-state">No field officer assigned yet — add a FieldOfficer column value on the Centers tab.</div>`;
+
+    Icons.hydrate(trainersEl); Icons.hydrate(fieldOfficersEl);
+  }
+
+  async function submitMobilization(center, mobilized, completed, btn){
+    btn.disabled = true;
+    try{
+      const bustedUrl = APP_CONFIG.APPS_SCRIPT_URL;
+      const res = await fetch(bustedUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids a CORS preflight against Apps Script
+        body: JSON.stringify({ action: "updateMobilization", center, mobilized, completed })
+      });
+      const json = await res.json();
+      if(!json.ok) throw new Error(json.error || "Update failed");
+      Utils.toast("Mobilization updated", "ok");
+      Api.refreshNow();
+    }catch(err){
+      Utils.toast("Could not save: " + err.message, "err");
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  function renderMobilization(mobilization, centers){
+    const el = document.getElementById("mobilization-container");
+    if(!el) return;
+    const byCenter = {};
+    mobilization.forEach(m => { byCenter[m.center] = m; });
+
+    if(isCenterScope){
+      const centerName = session.center;
+      const m = byCenter[centerName] || { mobilized: 0, completed: 0, lastUpdated: "—" };
+      el.innerHTML = `<div class="mobilization-card">
+        <h4 style="margin:0 0 4px;font-size:14.5px;">${Utils.escapeHtml(centerName)}</h4>
+        <div class="hint">Last updated: ${Utils.escapeHtml(m.lastUpdated || "—")}</div>
+        <div class="mobilization-form">
+          <label>Students mobilized<input type="number" min="0" id="mob-mobilized" value="${m.mobilized}"></label>
+          <label>Students completed<input type="number" min="0" id="mob-completed" value="${m.completed}"></label>
+          <button class="btn btn-primary" id="mob-save">Save update</button>
+        </div>
+      </div>`;
+      document.getElementById("mob-save").addEventListener("click", () => {
+        const mobilized = Number(document.getElementById("mob-mobilized").value || 0);
+        const completed = Number(document.getElementById("mob-completed").value || 0);
+        submitMobilization(centerName, mobilized, completed, document.getElementById("mob-save"));
+      });
+    }else{
+      const rows = centers.map(c => byCenter[c.centerName] || { center: c.centerName, mobilized: 0, completed: 0, lastUpdated: "—" });
+      el.innerHTML = `<div class="mobilization-card">
+        <div class="table-wrap"><table class="data-table"><thead><tr>
+          <th>Center</th><th>Mobilized</th><th>Completed</th><th>Last updated</th>
+        </tr></thead><tbody>
+          ${rows.map(r => `<tr><td>${Utils.escapeHtml(r.center)}</td><td>${Utils.fmtInt(r.mobilized)}</td><td>${Utils.fmtInt(r.completed)}</td><td>${Utils.escapeHtml(r.lastUpdated||"—")}</td></tr>`).join("")
+          || `<tr><td colspan="4" class="empty-state">No mobilization data yet.</td></tr>`}
+        </tbody></table></div>
+      </div>`;
+    }
+  }
+
   function renderDashboard(sessionScoped){
     lastSessionScoped = sessionScoped;
     fillOverviewSelect(ovEls.center, [...new Set(sessionScoped.centers.map(c=>c.centerName))].sort());
@@ -416,6 +518,12 @@
 
     const data = applyOverviewFilters(sessionScoped, ovEls.center.value, ovEls.batch.value);
     latest = data;
+    data.kpis.activeAttendancePct = data.attendance.activePct;
+    data.kpis.completedAttendancePct = data.attendance.completedPct;
+
+    renderOverdueBanner(data.overdue || []);
+    renderTeamPerformance(data.teamPerformance || { trainers:[], mobilizers:[], fieldOfficers:[] });
+    renderMobilization(data.mobilization || [], sessionScoped.centers || []);
 
     renderKpiGrid(document.getElementById("kpi-grid"), KPI_DEFS, data.kpis);
     renderCenterGrids(data.centers);
