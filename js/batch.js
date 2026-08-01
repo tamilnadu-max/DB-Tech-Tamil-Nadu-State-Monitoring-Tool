@@ -55,8 +55,8 @@
 
   function render(){
     const rows = applyFilters();
-    els.tbody.innerHTML = rows.map(b => `<tr>
-      <td>${Utils.escapeHtml(b.batchId)}</td><td>${Utils.escapeHtml(b.course)}</td><td>${Utils.escapeHtml(b.project)}</td>
+    els.tbody.innerHTML = rows.map(b => `<tr class="reveal-row">
+      <td>${Utils.batchLabelHtml(b.course, b.batchId)}</td><td>${Utils.escapeHtml(b.project)}</td>
       <td>${Utils.escapeHtml(b.startDate)}</td><td>${Utils.escapeHtml(b.endDate)}</td><td>${Utils.escapeHtml(b.trainer)}</td>
       <td><a href="center.html?name=${encodeURIComponent(b.center)}" style="color:var(--db-blue);font-weight:600;">${Utils.escapeHtml(b.center)}</a></td>
       <td>${Utils.fmtInt(b.enrolled)}</td><td>${Utils.fmtInt(b.presentToday)}</td><td>${Utils.fmtInt(b.absentToday)}</td>
@@ -64,7 +64,7 @@
       <td>${Utils.pillYesNo(b.lms1Completed)}</td><td>${Utils.pillYesNo(b.lms2Completed)}</td><td>${Utils.pillYesNo(b.assessmentCompleted)}</td>
       <td>${Utils.fmtInt(b.residentialCount)}</td><td>${Utils.escapeHtml(b.wadhwaniStatus||"—")}</td>
       <td>${Utils.escapeHtml(b.remarks||"—")}</td>
-    </tr>`).join("") || `<tr><td colspan="18" class="empty-state">No batches match these filters.</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="17" class="empty-state">No batches match these filters.</td></tr>`;
     els.rowCount.textContent = `${rows.length} of ${allRows.length} batches`;
   }
 
