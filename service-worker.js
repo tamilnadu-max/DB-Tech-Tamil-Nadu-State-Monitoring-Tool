@@ -4,12 +4,12 @@
  * It never caches the Apps Script API response itself — live data always
  * comes from the network.
  */
-const CACHE_NAME = "dbtech-shell-v1";
+const CACHE_NAME = "dbtech-shell-v2";
 const SHELL_FILES = [
-  "index.html","dashboard.html","center.html","batch.html","student.html",
+  "index.html","dashboard.html","center.html","batch.html","student.html","import-attendance.html",
   "css/style.css",
   "js/config.js","js/icons.js","js/auth.js","js/utils.js","js/api.js","js/charts.js","js/layout.js",
-  "js/dashboard.js","js/center.js","js/batch.js","js/student.js",
+  "js/dashboard.js","js/center.js","js/batch.js","js/student.js","js/import-attendance.js",
   "assets/logo.png","manifest.json"
 ];
 
