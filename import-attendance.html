@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Import Attendance — DB Tech Tamil Nadu</title>
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="DB Tech">
+      <div class="name">DB Tech<small>Tamil Nadu Live Ops</small></div>
+    </div>
+    <nav class="nav">
+      <a href="dashboard.html"><i data-icon="grid"></i> Overview</a>
+      <a href="batch.html"><i data-icon="layers"></i> Batches</a>
+      <a href="student.html"><i data-icon="users"></i> Students</a>
+      <a href="import-attendance.html" class="active"><i data-icon="upload"></i> Import Attendance</a>
+    </nav>
+    <div class="role-box" id="role-box"></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn menu-toggle" id="menu-toggle" aria-label="Menu"><i data-icon="menu"></i></button>
+        <div class="title-block">
+          <h1>Import Attendance</h1>
+          <div class="sub" id="last-updated">Connecting to live sheet…</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="clock" id="live-clock"></div>
+        <button class="btn btn-primary" id="refresh-btn"><i data-icon="refresh"></i> Refresh</button>
+      </div>
+    </header>
+    <div class="pulse-strip" id="pulse-strip"><div class="fill" id="pulse-fill"></div></div>
+
+    <main class="content">
+      <div class="panel panel-pad" style="margin-bottom:18px;">
+        <h3 style="font-size:14.5px;margin-bottom:8px;">Upload a Student Attendance Register</h3>
+        <p class="hint" style="margin-bottom:14px;">
+          Upload the register .xlsx file exactly as your center already fills it in — no retyping needed.
+          The site reads the Center, Domain, Batch Code, and every date column with a <b>P</b> mark, and
+          writes it straight into the Attendance tab. Blank weekday cells (Mon–Sat) are recorded as Absent;
+          Sundays are skipped; future dates are never marked.
+        </p>
+        <input type="file" id="file-input" accept=".xlsx,.xls">
+      </div>
+
+      <div id="preview-container"></div>
+    </main>
+
+    <footer class="site-footer">© Don Bosco Tech Society - Tamil Nadu State Operations</footer>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/import-attendance.js"></script>
+</body>
+</html>
