@@ -33,7 +33,12 @@ const Api = (function(){
     if(!url || url.indexOf("PASTE_") === 0){
       throw new Error("Apps Script URL is not configured yet — see README setup guide.");
     }
-    const res = await fetch(url, { method: "GET", redirect: "follow" });
+    // Cache-bust: browsers can silently cache identical GET requests to the
+    // same Apps Script /exec URL, which makes sheet edits look like they
+    // "aren't reflecting". Appending a changing param plus cache: "no-store"
+    // forces every refresh to actually hit Google again.
+    const bustedUrl = url + (url.indexOf("?") === -1 ? "?" : "&") + "_ts=" + Date.now();
+    const res = await fetch(bustedUrl, { method: "GET", redirect: "follow", cache: "no-store" });
     if(!res.ok) throw new Error("API responded with status " + res.status);
     const json = await res.json();
     if(json.error) throw new Error(json.error);
