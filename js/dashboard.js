@@ -52,9 +52,21 @@
     { key:"pendingAttendanceUpdates", label:"Pending Attendance Updates", icon:"alertTriangle", cls:"warn" }
   ];
 
+  function relevanceClass(key, value){
+    if(value === undefined || value === null || isNaN(value)) return "";
+    if(["attendancePct","activeAttendancePct","completedAttendancePct"].includes(key)){
+      return value >= 80 ? "good" : value >= 60 ? "warn" : "crit";
+    }
+    if(key === "pendingAttendanceUpdates") return value > 0 ? "crit" : "good";
+    if(key === "absentToday") return value === 0 ? "good" : "warn";
+    if(key === "totalDropouts") return value === 0 ? "good" : "";
+    return "";
+  }
+
   function kpiCardHtml(def, value, trend){
     const displayVal = def.pct ? Utils.fmtPct(value) : Utils.fmtInt(value);
-    return `<div class="kpi-card ${def.cls||''}">
+    const cls = relevanceClass(def.key, value) || def.cls || "";
+    return `<div class="kpi-card ${cls}">
       <div class="top-row">
         <div class="kpi-icon"><i data-icon="${def.icon}"></i></div>
         ${Utils.trendBadge(trend)}
@@ -64,9 +76,28 @@
     </div>`;
   }
 
+  const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function animateCountUp(el, target, isPct){
+    if(prefersReducedMotion || !isFinite(target)){ el.textContent = isPct ? Utils.fmtPct(target) : Utils.fmtInt(target); return; }
+    const start = 0, duration = 600, startTime = performance.now();
+    function tick(now){
+      const progress = Math.min(1, (now - startTime) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = start + (target - start) * eased;
+      el.textContent = isPct ? Utils.fmtPct(current) : Utils.fmtInt(Math.round(current));
+      if(progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
   function renderKpiGrid(container, defs, kpis){
     container.innerHTML = defs.map(d => kpiCardHtml(d, kpis[d.key], kpis.trend?.[d.key])).join("");
     Icons.hydrate(container);
+    Utils.qsa(".kpi-value", container).forEach((el, i) => {
+      const def = defs[i];
+      animateCountUp(el, Utils.n(kpis[def.key]), !!def.pct);
+    });
   }
 
   function scoreBadgeHtml(score){
@@ -315,7 +346,13 @@
       performance: {
         ranking: (data.performance.ranking||[]).filter(r=>r.center===center),
         alerts: (data.performance.alerts||[]).filter(a=>a.center===center)
-      }
+      },
+      overdue: (data.overdue||[]).filter(o => o.center === center),
+      teamPerformance: {
+        trainers: (data.teamPerformance?.trainers||[]).filter(t => t.center === center),
+        fieldOfficers: (data.teamPerformance?.fieldOfficers||[]).filter(f => f.center === center)
+      },
+      mobilization: (data.mobilization||[]).filter(m => m.center === center)
     };
   }
 
@@ -416,12 +453,13 @@
     const el = document.getElementById("overdue-banner-container");
     if(!el) return;
     if(!overdue.length){ el.innerHTML = ""; return; }
-    el.innerHTML = `<div class="overdue-banner">
-      <h4><i data-icon="alertTriangle"></i> Batch restart overdue — ${overdue.length} center(s) need attention</h4>
-      ${overdue.map(o => `<div class="overdue-row">
-        <span>${Utils.escapeHtml(o.center)} — last batch <b>${Utils.escapeHtml(o.lastBatchId)}</b> ended ${Utils.escapeHtml(o.lastBatchEnd)}</span>
-        <span class="days">${o.daysOverdue} day(s) overdue</span>
-      </div>`).join("")}
+    el.innerHTML = `<div class="overdue-banner compact">
+      <h4><i data-icon="alertTriangle"></i> ${overdue.length} center${overdue.length>1?"s":""} overdue for batch restart</h4>
+      <div class="overdue-chip-row">
+        ${overdue.map(o => `<span class="overdue-chip" title="Last batch ${Utils.escapeHtml(o.lastBatchId)} ended ${Utils.escapeHtml(o.lastBatchEnd)}">
+          ${Utils.escapeHtml(o.center)} <b>${o.daysOverdue}d</b>
+        </span>`).join("")}
+      </div>
     </div>`;
     Icons.hydrate(el);
   }
