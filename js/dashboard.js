@@ -316,11 +316,105 @@
     };
   }
 
-  let latest = null;
+  // ---- Overview filter bar: narrow to one center and/or one batch client-side ----
+  function applyOverviewFilters(data, centerVal, batchVal){
+    if(!centerVal && !batchVal) return data;
+    let centers = data.centers||[], batches = data.batches||[], students = data.students||[];
+    if(centerVal){
+      centers = centers.filter(c => c.centerName === centerVal);
+      batches = batches.filter(b => b.center === centerVal);
+      students = students.filter(s => s.center === centerVal);
+    }
+    if(batchVal){
+      batches = batches.filter(b => b.batchId === batchVal);
+      students = students.filter(s => s.batchId === batchVal);
+      const batchCenters = new Set(batches.map(b => b.center));
+      centers = centers.filter(c => batchCenters.has(c.centerName));
+    }
+    const centerNames = new Set(centers.map(c => c.centerName));
+    const presentToday = batches.reduce((s,b)=>s+Utils.n(b.presentToday),0);
+    const absentToday = batches.reduce((s,b)=>s+Utils.n(b.absentToday),0);
+    const attendancePct = (presentToday+absentToday) > 0 ? Math.round((presentToday/(presentToday+absentToday))*1000)/10 : 0;
+    const wadhwaniRegistered = students.filter(s=>s.wadhwaniRegistered).length;
+    const wadhwaniCertificates = students.filter(s=>s.wadhwaniCertificate).length;
 
-  Api.onData((raw, err) => {
-    if(!raw) return;
-    const data = scopeForSession(raw);
+    const kpis = {
+      ...data.kpis,
+      totalCenters: centers.length,
+      activeBatches: batches.filter(b => b.status!=="Completed" && b.status!=="Closed").length,
+      totalEnrolled: students.length,
+      presentToday, absentToday, attendancePct,
+      totalDropouts: students.filter(s=>s.status==="Dropout").length,
+      lms1Completed: students.filter(s=>s.lms1).length,
+      lms2Completed: students.filter(s=>s.lms2).length,
+      assessmentCompleted: students.filter(s=>s.assessment).length,
+      residentialStudents: students.filter(s=>s.residential).length,
+      placementReady: students.filter(s=>s.placementReady).length,
+      wadhwaniRegistered,
+      wadhwaniS1: students.filter(s=>s.wadhwaniS1).length,
+      wadhwaniS2: students.filter(s=>s.wadhwaniS2).length,
+      wadhwaniS3: students.filter(s=>s.wadhwaniS3).length,
+      wadhwaniS4: students.filter(s=>s.wadhwaniS4).length,
+      wadhwaniS5: students.filter(s=>s.wadhwaniS5).length,
+      wadhwaniFinalAssessment: students.filter(s=>s.wadhwaniFinalAssessment).length,
+      wadhwaniCertificates,
+      centersUpdatedToday: centers.filter(c=>c.updatedToday).length,
+      pendingAttendanceUpdates: centers.filter(c=>!c.updatedToday).length
+    };
+
+    const wadhwani = {
+      registered: wadhwaniRegistered, s1: kpis.wadhwaniS1, s2: kpis.wadhwaniS2, s3: kpis.wadhwaniS3,
+      s4: kpis.wadhwaniS4, s5: kpis.wadhwaniS5, finalAssessment: kpis.wadhwaniFinalAssessment,
+      certificates: wadhwaniCertificates,
+      completionPct: wadhwaniRegistered > 0 ? Math.round((wadhwaniCertificates/wadhwaniRegistered)*1000)/10 : 0,
+      byCenter: (data.wadhwani.byCenter||[]).filter(c => centerNames.has(c.center))
+    };
+
+    const capacity = centers.reduce((s,c)=>s+Utils.n(c.residentialCapacity),0);
+    const occupied = centers.reduce((s,c)=>s+Utils.n(c.residentialOccupied),0);
+    const residential = {
+      capacity, occupied, available: Math.max(0, capacity-occupied),
+      utilizationPct: capacity > 0 ? Math.round((occupied/capacity)*1000)/10 : 0,
+      byCenter: (data.residential.byCenter||[]).filter(c => centerNames.has(c.center))
+    };
+
+    const attendance = {
+      ...data.attendance,
+      byCenter: (data.attendance.byCenter||[]).filter(c => centerNames.has(c.center)),
+      byBatch: (data.attendance.byBatch||[]).filter(b =>
+        (!centerVal || b.center === centerVal) && (!batchVal || b.batch === batchVal)),
+      heatmap: (data.attendance.heatmap||[]).filter(h => centerNames.has(h.center))
+    };
+
+    const performance = {
+      ranking: (data.performance.ranking||[]).filter(r => centerNames.has(r.center)),
+      alerts: (data.performance.alerts||[]).filter(a => centerNames.has(a.center))
+    };
+
+    return { ...data, centers, batches, students, kpis, wadhwani, residential, attendance, performance };
+  }
+
+  let latest = null;
+  let lastSessionScoped = null;
+  const ovEls = {
+    center: document.getElementById("ov-center"),
+    batch: document.getElementById("ov-batch"),
+    clear: document.getElementById("ov-clear")
+  };
+
+  function fillOverviewSelect(el, values){
+    const current = el.value;
+    el.innerHTML = `<option value="">${el.id==="ov-center" ? "All centers" : "All batches"}</option>` +
+      values.map(v => `<option value="${Utils.escapeHtml(v)}">${Utils.escapeHtml(v)}</option>`).join("");
+    if(values.includes(current)) el.value = current;
+  }
+
+  function renderDashboard(sessionScoped){
+    lastSessionScoped = sessionScoped;
+    fillOverviewSelect(ovEls.center, [...new Set(sessionScoped.centers.map(c=>c.centerName))].sort());
+    fillOverviewSelect(ovEls.batch, [...new Set(sessionScoped.batches.map(b=>b.batchId))].sort());
+
+    const data = applyOverviewFilters(sessionScoped, ovEls.center.value, ovEls.batch.value);
     latest = data;
 
     renderKpiGrid(document.getElementById("kpi-grid"), KPI_DEFS, data.kpis);
@@ -354,6 +448,19 @@
       { key:"today", label:"Today's Attendance", icon:"check", pct:true, cls:"good" },
       { key:"yesterday", label:"Yesterday's Attendance", icon:"target", pct:true }
     ], data.attendance);
+  }
+
+  Api.onData((raw, err) => {
+    if(!raw) return;
+    renderDashboard(scopeForSession(raw));
+  });
+
+  [ovEls.center, ovEls.batch].forEach(el => el.addEventListener("change", () => {
+    if(lastSessionScoped) renderDashboard(lastSessionScoped);
+  }));
+  ovEls.clear.addEventListener("click", () => {
+    ovEls.center.value = ""; ovEls.batch.value = "";
+    if(lastSessionScoped) renderDashboard(lastSessionScoped);
   });
 
   document.querySelectorAll("[data-report]").forEach(btn => {
