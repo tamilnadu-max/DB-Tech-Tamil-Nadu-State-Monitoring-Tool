@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Center Detail — DB Tech Tamil Nadu</title>
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="DB Tech">
+      <div class="name">DB Tech<small>Tamil Nadu Live Ops</small></div>
+    </div>
+    <nav class="nav">
+      <a href="dashboard.html"><i data-icon="grid"></i> Overview</a>
+      <a href="batch.html"><i data-icon="layers"></i> Batches</a>
+      <a href="student.html"><i data-icon="users"></i> Students</a>
+    </nav>
+    <div class="role-box" id="role-box"></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn menu-toggle" id="menu-toggle" aria-label="Menu"><i data-icon="menu"></i></button>
+        <div class="title-block">
+          <h1 id="center-title">Center</h1>
+          <div class="sub" id="last-updated">Connecting to live sheet…</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="clock" id="live-clock"></div>
+        <button class="btn btn-primary" id="refresh-btn"><i data-icon="refresh"></i> Refresh</button>
+      </div>
+    </header>
+    <div class="pulse-strip" id="pulse-strip"><div class="fill" id="pulse-fill"></div></div>
+
+    <main class="content">
+      <a href="dashboard.html" class="back-link"><i data-icon="chevronLeft"></i> Back to overview</a>
+
+      <div class="kpi-grid" id="center-kpi-grid"></div>
+
+      <div class="section-head"><h2>Center profile</h2></div>
+      <div class="panel panel-pad" id="center-profile"></div>
+
+      <div class="section-head"><h2>Progress</h2></div>
+      <div class="chart-grid">
+        <div class="panel"><div class="panel-head"><h3>Attendance trend</h3></div><div class="chart-box"><canvas id="chart-center-attendance"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>LMS &amp; assessment completion</h3></div><div class="chart-box"><canvas id="chart-center-progress"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Wadhwani funnel</h3></div><div class="chart-box"><canvas id="chart-center-wadhwani"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Residential status</h3></div><div class="chart-box"><canvas id="chart-center-residential"></canvas></div></div>
+      </div>
+
+      <div class="section-head"><h2>Running batches</h2></div>
+      <div class="panel">
+        <div class="table-wrap"><table class="data-table" id="table-center-batches"><thead><tr>
+          <th>Batch ID</th><th>Course</th><th>Trainer</th><th>Start</th><th>End</th><th>Enrolled</th><th>Present</th><th>Attendance %</th><th>Dropouts</th>
+        </tr></thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="section-head"><h2>Students</h2></div>
+      <div class="panel">
+        <div class="table-wrap"><table class="data-table" id="table-center-students"><thead><tr>
+          <th>Student ID</th><th>Name</th><th>Batch</th><th>Attendance %</th><th>Today</th><th>LMS 1</th><th>LMS 2</th><th>Assessment</th>
+        </tr></thead><tbody></tbody></table></div>
+      </div>
+    </main>
+
+    <footer class="site-footer">© Don Bosco Tech Society - Tamil Nadu State Operations</footer>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/center.js"></script>
+</body>
+</html>

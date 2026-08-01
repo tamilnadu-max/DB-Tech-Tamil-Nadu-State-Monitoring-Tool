@@ -1,0 +1,13 @@
+{
+  "name": "DB Tech Tamil Nadu Live Operations Dashboard",
+  "short_name": "DB Tech Ops",
+  "description": "Live operations dashboard for DB Tech Tamil Nadu skilling centers.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#F3F6FA",
+  "theme_color": "#003E7E",
+  "orientation": "any",
+  "icons": [
+    { "src": "assets/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
