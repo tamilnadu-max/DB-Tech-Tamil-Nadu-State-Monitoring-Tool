@@ -102,9 +102,21 @@ const Utils = (function(){
     window.print();
   }
 
+  function batchLabelHtml(course, batchId){
+    return `<div class="batch-label"><span class="domain">${escapeHtml(course || "—")}</span><span class="batch-id">${escapeHtml(batchId || "")}</span></div>`;
+  }
+
+  function starRating(rating){
+    const full = Math.round(rating);
+    let out = "";
+    for(let i=1;i<=5;i++) out += i <= full ? "★" : "☆";
+    return `<span class="star-rating" title="${rating.toFixed(1)}/5">${out}</span>`;
+  }
+
   function qs(sel, root=document){ return root.querySelector(sel); }
   function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
 
   return { n, fmtInt, fmtPct, escapeHtml, trendBadge, scoreColor, badgeLabel, pillYesNo,
-           debounce, toast, updateClock, exportCsv, exportExcel, exportPdf, qs, qsa };
+           debounce, toast, updateClock, exportCsv, exportExcel, exportPdf, qs, qsa,
+           batchLabelHtml, starRating };
 })();
