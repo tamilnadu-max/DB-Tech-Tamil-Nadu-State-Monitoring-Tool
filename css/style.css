@@ -179,6 +179,12 @@ img.logo{ height:36px; width:auto; display:block; }
 .kpi-card.warn .kpi-icon{ background:rgba(200,136,10,.12); color:var(--db-amber); }
 .kpi-card.crit .kpi-icon{ background:rgba(214,69,69,.12); color:var(--db-red); }
 .kpi-card.good .kpi-icon{ background:rgba(31,146,84,.12); color:var(--db-green); }
+.kpi-card.warn{ border-top:3px solid var(--db-amber); }
+.kpi-card.crit{ border-top:3px solid var(--db-red); }
+.kpi-card.good{ border-top:3px solid var(--db-green); }
+.kpi-card.warn .kpi-value{ color:var(--db-amber); }
+.kpi-card.crit .kpi-value{ color:var(--db-red); }
+.kpi-card.good .kpi-value{ color:var(--db-green); }
 
 .trend{ font-size:10.5px; font-weight:700; display:flex; align-items:center; gap:3px; padding:3px 7px; border-radius:20px; }
 .trend.up{ color:var(--db-green); background:rgba(31,146,84,.1); }
@@ -267,6 +273,7 @@ table.data-table tbody tr:hover{ background:var(--surface-2); }
 .tab-btn:hover{ color:var(--db-blue); }
 .tab-btn.active{ color:var(--db-blue); border-bottom-color:var(--db-orange); }
 .tab-panel{ display:none; }
+.tab-panel.active{ animation:fadeInUp .3s ease both; }
 .tab-panel.active{ display:block; animation:fade-in .25s ease; }
 @keyframes fade-in{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
 
@@ -365,14 +372,18 @@ table.data-table tbody tr:hover{ background:var(--surface-2); }
 /* ---------- Star ratings ---------- */
 .star-rating{ color:#f5a623; font-size:15px; letter-spacing:1px; }
 
-/* ---------- Overdue / reminder banner ---------- */
-.overdue-banner{ display:flex; flex-direction:column; gap:8px; background:linear-gradient(135deg,#fff4e5,#ffe6e6);
-  border:1px solid #f3b98a; border-radius:14px; padding:14px 16px; margin-bottom:16px; animation:slideDown .35s ease; }
-.overdue-banner h4{ display:flex; align-items:center; gap:8px; margin:0; font-size:14px; color:#a13c00; }
-.overdue-row{ display:flex; justify-content:space-between; align-items:center; background:#fff; border-radius:10px;
-  padding:8px 12px; font-size:13px; box-shadow:var(--shadow-sm); transition:transform .15s ease; }
-.overdue-row:hover{ transform:translateX(3px); }
-.overdue-row .days{ font-weight:800; color:#c0392b; }
+/* ---------- Overdue / reminder banner (compact) ---------- */
+.overdue-banner.compact{ display:flex; flex-direction:column; gap:8px; background:linear-gradient(135deg,#fff4e5,#ffe9e9);
+  border:1px solid #f3b98a; border-radius:12px; padding:10px 14px; margin-bottom:14px; animation:slideDown .35s ease; }
+.overdue-banner.compact h4{ display:flex; align-items:center; gap:6px; margin:0; font-size:12.5px; font-weight:700; color:#a13c00; }
+.overdue-banner.compact h4 svg{ width:15px; height:15px; }
+.overdue-chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
+.overdue-chip{ display:inline-flex; align-items:center; gap:5px; background:#fff; border-radius:20px; padding:4px 10px;
+  font-size:11.5px; font-weight:600; color:var(--ink); box-shadow:var(--shadow-sm); transition:transform .15s ease; cursor:default; }
+.overdue-chip:hover{ transform:translateY(-2px); }
+.overdue-chip b{ color:#c0392b; font-weight:800; }
+.overdue-row{ display:flex; justify-content:space-between; align-items:center; background:#fff4e5; border:1px solid #f3b98a;
+  border-radius:10px; padding:8px 12px; font-size:12.5px; margin-top:8px; }
 
 /* ---------- Team performance cards ---------- */
 .team-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-bottom:22px; }
