@@ -12,6 +12,7 @@
   const els = {
     search: document.getElementById("f-search"),
     center: document.getElementById("f-center"),
+    batch: document.getElementById("f-batch"),
     course: document.getElementById("f-course"),
     trainer: document.getElementById("f-trainer"),
     project: document.getElementById("f-project"),
@@ -36,6 +37,7 @@
     const allowedCenters = Auth.allowedCenters();
     let rows = allRows.filter(b => allowedCenters.includes(b.center));
     if(els.center.value) rows = rows.filter(b => b.center === els.center.value);
+    if(els.batch.value) rows = rows.filter(b => b.batchId === els.batch.value);
     if(els.course.value) rows = rows.filter(b => b.course === els.course.value);
     if(els.trainer.value) rows = rows.filter(b => b.trainer === els.trainer.value);
     if(els.project.value) rows = rows.filter(b => b.project === els.project.value);
@@ -76,9 +78,9 @@
   });
 
   [els.search].forEach(el => el.addEventListener("input", Utils.debounce(render, 200)));
-  [els.center, els.course, els.trainer, els.project, els.date].forEach(el => el.addEventListener("change", render));
+  [els.center, els.batch, els.course, els.trainer, els.project, els.date].forEach(el => el.addEventListener("change", render));
   els.clear.addEventListener("click", () => {
-    els.search.value = ""; els.center.value = ""; els.course.value = ""; els.trainer.value = ""; els.project.value = ""; els.date.value = "";
+    els.search.value = ""; els.center.value = ""; els.batch.value = ""; els.course.value = ""; els.trainer.value = ""; els.project.value = ""; els.date.value = "";
     render();
   });
   els.exportBtn.addEventListener("click", () => {
@@ -96,6 +98,7 @@
     if(!data) return;
     allRows = (data.batches||[]).filter(b => Auth.allowedCenters().includes(b.center));
     fillSelect(els.center, uniqueSorted(allRows, "center"));
+    fillSelect(els.batch, uniqueSorted(allRows, "batchId"));
     fillSelect(els.course, uniqueSorted(allRows, "course"));
     fillSelect(els.trainer, uniqueSorted(allRows, "trainer"));
     fillSelect(els.project, uniqueSorted(allRows, "project"));
