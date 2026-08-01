@@ -372,17 +372,17 @@ table.data-table tbody tr:hover{ background:var(--surface-2); }
 /* ---------- Star ratings ---------- */
 .star-rating{ color:#f5a623; font-size:15px; letter-spacing:1px; }
 
-/* ---------- Overdue / reminder banner (compact) ---------- */
-.overdue-banner.compact{ display:flex; flex-direction:column; gap:8px; background:linear-gradient(135deg,#fff4e5,#ffe9e9);
-  border:1px solid #f3b98a; border-radius:12px; padding:10px 14px; margin-bottom:14px; animation:slideDown .35s ease; }
-.overdue-banner.compact h4{ display:flex; align-items:center; gap:6px; margin:0; font-size:12.5px; font-weight:700; color:#a13c00; }
-.overdue-banner.compact h4 svg{ width:15px; height:15px; }
-.overdue-chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
-.overdue-chip{ display:inline-flex; align-items:center; gap:5px; background:#fff; border-radius:20px; padding:4px 10px;
-  font-size:11.5px; font-weight:600; color:var(--ink); box-shadow:var(--shadow-sm); transition:transform .15s ease; cursor:default; }
+/* ---------- Overdue / reminder banner (compact, red) ---------- */
+.overdue-banner.compact{ display:flex; flex-direction:column; gap:6px; background:rgba(214,69,69,.08);
+  border:1px solid rgba(214,69,69,.35); border-radius:9px; padding:7px 11px; margin-bottom:12px; animation:slideDown .35s ease; }
+.overdue-banner.compact h4{ display:flex; align-items:center; gap:5px; margin:0; font-size:11.5px; font-weight:700; color:var(--db-red); }
+.overdue-banner.compact h4 svg{ width:13px; height:13px; }
+.overdue-chip-row{ display:flex; flex-wrap:wrap; gap:5px; }
+.overdue-chip{ display:inline-flex; align-items:center; gap:4px; background:#fff; border:1px solid rgba(214,69,69,.25); border-radius:20px; padding:3px 9px;
+  font-size:10.5px; font-weight:600; color:var(--ink); box-shadow:var(--shadow-sm); transition:transform .15s ease; cursor:default; }
 .overdue-chip:hover{ transform:translateY(-2px); }
-.overdue-chip b{ color:#c0392b; font-weight:800; }
-.overdue-row{ display:flex; justify-content:space-between; align-items:center; background:#fff4e5; border:1px solid #f3b98a;
+.overdue-chip b{ color:var(--db-red); font-weight:800; }
+.overdue-row{ display:flex; justify-content:space-between; align-items:center; background:rgba(214,69,69,.08); border:1px solid rgba(214,69,69,.3);
   border-radius:10px; padding:8px 12px; font-size:12.5px; margin-top:8px; }
 
 /* ---------- Team performance cards ---------- */
