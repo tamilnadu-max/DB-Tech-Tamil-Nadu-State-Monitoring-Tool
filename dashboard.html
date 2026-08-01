@@ -23,6 +23,7 @@
       <a href="dashboard.html" class="active"><i data-icon="grid"></i> Overview</a>
       <a href="batch.html"><i data-icon="layers"></i> Batches</a>
       <a href="student.html"><i data-icon="users"></i> Students</a>
+      <a href="import-attendance.html"><i data-icon="upload"></i> Import Attendance</a>
       <div class="section-label">This page's tabs</div>
       <a href="#" id="nav-jump-centers"><i data-icon="building"></i> Centers</a>
       <a href="#" id="nav-jump-performance"><i data-icon="award"></i> Performance</a>
@@ -56,6 +57,7 @@
         <button class="tab-btn" data-tab="residential">Residential</button>
         <button class="tab-btn" data-tab="attendance">Attendance</button>
         <button class="tab-btn" data-tab="performance">Center Performance</button>
+        <button class="tab-btn" data-tab="team">Team &amp; Mobilization</button>
         <button class="tab-btn" data-tab="reports">Reports</button>
       </div>
 
@@ -67,6 +69,7 @@
 
       <!-- OVERVIEW -->
       <section class="tab-panel active" id="panel-overview">
+        <div id="overdue-banner-container"></div>
         <div class="kpi-grid" id="kpi-grid"></div>
 
         <div class="section-head"><h2>Attendance &amp; completion at a glance</h2></div>
@@ -146,6 +149,18 @@
             <div class="panel-pad"><div class="alert-list" id="alert-list"></div></div>
           </div>
         </div>
+      </section>
+
+      <!-- TEAM & MOBILIZATION -->
+      <section class="tab-panel" id="panel-team">
+        <div class="section-head"><h2>Mobilization status</h2><span class="hint">Students mobilized vs completed for the upcoming batch</span></div>
+        <div id="mobilization-container"></div>
+
+        <div class="section-head"><h2>Trainer performance</h2><span class="hint">Attendance 30% · LMS 20% · Wadhwani 20% · On-time batch commencement 30%</span></div>
+        <div class="team-grid" id="team-grid-trainers"></div>
+
+        <div class="section-head"><h2>Field officer performance</h2><span class="hint">Batch-to-batch gap adherence + mobilization progress (one role covers both)</span></div>
+        <div class="team-grid" id="team-grid-fieldofficers"></div>
       </section>
 
       <!-- REPORTS -->
