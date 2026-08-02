@@ -317,20 +317,35 @@
     const batches = (data.batches||[]).filter(b => b.center === center);
     const students = (data.students||[]).filter(s => s.center === center);
     const c0 = centers[0] || {};
+    const activeBatchIds = new Set(batches.filter(b => b.status === "Active").map(b => b.batchId));
+    const completedBatchIds = new Set(batches.filter(b => b.status === "Completed").map(b => b.batchId));
     const kpis = {
-      ...data.kpis,
       totalCenters: 1,
-      activeBatches: c0.activeBatches ?? batches.length,
-      totalEnrolled: c0.totalEnrolled ?? students.length,
+      activeBatches: batches.filter(b => b.status !== "Completed" && b.status !== "Closed").length,
+      totalEnrolled: students.length,
+      activeStudents: students.filter(s => s.status !== "Dropout" && activeBatchIds.has(s.batchId)).length,
+      completedStudents: students.filter(s => s.status !== "Dropout" && completedBatchIds.has(s.batchId)).length,
       presentToday: batches.reduce((s,b)=>s+Utils.n(b.presentToday),0),
       absentToday: batches.reduce((s,b)=>s+Utils.n(b.absentToday),0),
       attendancePct: c0.attendancePct ?? 0,
-      totalDropouts: c0.dropouts ?? 0,
-      lms1Completed: c0.lms1Completed ?? 0,
-      lms2Completed: c0.lms2Completed ?? 0,
-      assessmentCompleted: c0.assessmentCompleted ?? 0,
-      residentialStudents: c0.residentialStudents ?? 0,
+      activeAttendancePct: c0.attendancePct ?? 0,
+      completedAttendancePct: 0,
+      totalDropouts: students.filter(s => s.status === "Dropout").length,
+      lms1Completed: students.filter(s => s.lms1).length,
+      lms2Completed: students.filter(s => s.lms2).length,
+      assessmentCompleted: students.filter(s => s.assessment).length,
+      residentialStudents: students.filter(s => s.residential).length,
+      placementReady: students.filter(s => s.placementReady).length,
+      wadhwaniRegistered: students.filter(s => s.wadhwaniRegistered).length,
+      wadhwaniS1: students.filter(s => s.wadhwaniS1).length,
+      wadhwaniS2: students.filter(s => s.wadhwaniS2).length,
+      wadhwaniS3: students.filter(s => s.wadhwaniS3).length,
+      wadhwaniS4: students.filter(s => s.wadhwaniS4).length,
+      wadhwaniS5: students.filter(s => s.wadhwaniS5).length,
+      wadhwaniFinalAssessment: students.filter(s => s.wadhwaniFinalAssessment).length,
+      wadhwaniCertificates: students.filter(s => s.wadhwaniCertificate).length,
       centersUpdatedToday: c0.updatedToday ? 1 : 0,
+      pendingAttendanceUpdates: c0.updatedToday ? 0 : 1,
       trend: {}
     };
     return {
