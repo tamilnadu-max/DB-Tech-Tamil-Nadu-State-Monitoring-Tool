@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DB Tech Tamil Nadu Live Operations Dashboard</title>
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div id="splash-screen" class="splash-screen">
+  <div class="splash-logo-wrap"><img src="assets/logo.png" alt="DB Tech" class="splash-logo"></div>
+  <div class="splash-title">DB Tech Tamil Nadu</div>
+  <div class="splash-sub">Live Operations Dashboard</div>
+</div>
+
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="DB Tech">
+      <div class="name">DB Tech<small>Tamil Nadu Live Ops</small></div>
+    </div>
+    <nav class="nav">
+      <a href="dashboard.html" class="active"><i data-icon="grid"></i> Overview</a>
+      <a href="batch.html"><i data-icon="layers"></i> Batches</a>
+      <a href="student.html"><i data-icon="users"></i> Students</a>
+      <a href="mark-attendance.html"><i data-icon="check"></i> Mark Attendance</a>
+      <div class="section-label">This page's tabs</div>
+      <a href="#" id="nav-jump-centers"><i data-icon="building"></i> Centers</a>
+      <a href="#" id="nav-jump-performance"><i data-icon="award"></i> Performance</a>
+      <a href="#" id="nav-jump-reports"><i data-icon="download"></i> Reports</a>
+    </nav>
+    <div class="role-box" id="role-box"></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn menu-toggle" id="menu-toggle" aria-label="Menu"><i data-icon="menu"></i></button>
+        <div class="title-block">
+          <h1>DB Tech Tamil Nadu Live Operations Dashboard</h1>
+          <div class="sub" id="last-updated">Connecting to live sheet…</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="clock" id="live-clock"></div>
+        <button class="btn btn-primary" id="refresh-btn"><i data-icon="refresh"></i> Refresh</button>
+      </div>
+    </header>
+    <div class="pulse-strip" id="pulse-strip"><div class="fill" id="pulse-fill"></div></div>
+
+    <main class="content">
+
+      <div class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="centers">Centers</button>
+        <button class="tab-btn" data-tab="wadhwani">Wadhwani</button>
+        <button class="tab-btn" data-tab="residential">Residential</button>
+        <button class="tab-btn" data-tab="attendance">Attendance</button>
+        <button class="tab-btn" data-tab="performance">Center Performance</button>
+        <button class="tab-btn" data-tab="team">Team &amp; Mobilization</button>
+        <button class="tab-btn" data-tab="reports">Reports</button>
+      </div>
+
+      <div class="filter-bar" id="overview-filter-bar">
+        <select id="ov-center"><option value="">All centers</option></select>
+        <select id="ov-batch"><option value="">All batches</option></select>
+        <button class="btn" id="ov-clear">Clear filters</button>
+      </div>
+
+      <!-- OVERVIEW -->
+      <section class="tab-panel active" id="panel-overview">
+        <div id="overdue-banner-container"></div>
+        <div class="kpi-grid" id="kpi-grid"></div>
+
+        <div class="section-head"><h2>Attendance &amp; completion at a glance</h2></div>
+        <div class="chart-grid">
+          <div class="panel"><div class="panel-head"><h3>Attendance trend (last 7 days)</h3></div><div class="chart-box"><canvas id="chart-attendance-week"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><h3>Center comparison — attendance %</h3></div><div class="chart-box"><canvas id="chart-center-compare"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><h3>LMS completion</h3></div><div class="chart-box"><canvas id="chart-lms"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><h3>3rd-party assessment completion</h3></div><div class="chart-box"><canvas id="chart-assessment"></canvas></div></div>
+        </div>
+
+        <div class="section-head"><h2>Centers</h2><span class="hint">Tap a center for its full detail page</span></div>
+        <div class="center-grid" id="center-grid-overview"></div>
+      </section>
+
+      <!-- CENTERS -->
+      <section class="tab-panel" id="panel-centers">
+        <div class="section-head"><h2>All centers</h2><span class="hint">Ranked by overall performance score</span></div>
+        <div class="chart-grid" style="margin-bottom:16px;">
+          <div class="panel"><div class="panel-head"><h3>Center ranking</h3></div><div class="chart-box tall"><canvas id="chart-center-rank"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><h3>Enrollment trend</h3></div><div class="chart-box tall"><canvas id="chart-enrollment"></canvas></div></div>
+        </div>
+        <div class="center-grid" id="center-grid-full"></div>
+      </section>
+
+      <!-- WADHWANI -->
+      <section class="tab-panel" id="panel-wadhwani">
+        <div class="section-head"><h2>Wadhwani Foundation programme</h2></div>
+        <div class="kpi-grid" id="kpi-wadhwani"></div>
+        <div class="chart-grid" style="margin-top:16px;">
+          <div class="panel"><div class="panel-head"><h3>Session funnel</h3></div><div class="chart-box tall"><canvas id="chart-wadhwani-funnel"></canvas></div></div>
+          <div class="panel">
+            <div class="panel-head"><h3>Center-wise Wadhwani progress</h3></div>
+            <div class="table-wrap"><table class="data-table" id="table-wadhwani"><thead><tr>
+              <th>Center</th><th>Registered</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>S5</th><th>Final</th><th>Certificate</th><th>Completion</th><th>Status</th>
+            </tr></thead><tbody></tbody></table></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESIDENTIAL -->
+      <section class="tab-panel" id="panel-residential">
+        <div class="section-head"><h2>Residential occupancy</h2></div>
+        <div class="kpi-grid" id="kpi-residential"></div>
+        <div class="chart-grid" style="margin-top:16px;">
+          <div class="panel"><div class="panel-head"><h3>Utilization by center</h3></div><div class="chart-box tall"><canvas id="chart-residential"></canvas></div></div>
+          <div class="panel panel-pad">
+            <h3 style="font-size:13.5px;margin-bottom:12px;">Capacity vs occupied</h3>
+            <div id="residential-bars"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ATTENDANCE -->
+      <section class="tab-panel" id="panel-attendance">
+        <div class="section-head"><h2>Attendance operations</h2></div>
+        <div class="kpi-grid" id="kpi-attendance"></div>
+        <div class="chart-grid" style="margin-top:16px;">
+          <div class="panel"><div class="panel-head"><h3>Weekly trend</h3></div><div class="chart-box"><canvas id="chart-att-weekly"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><h3>Monthly trend</h3></div><div class="chart-box"><canvas id="chart-att-monthly"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><h3>By center</h3></div><div class="chart-box"><canvas id="chart-att-center"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><h3>By batch (present vs absent)</h3></div><div class="chart-box"><canvas id="chart-att-batch"></canvas></div></div>
+        </div>
+        <div class="section-head"><h2>Attendance heat map</h2><span class="hint">Last 14 days × centers</span></div>
+        <div class="panel panel-pad"><div id="heatmap"></div></div>
+      </section>
+
+      <!-- PERFORMANCE -->
+      <section class="tab-panel" id="panel-performance">
+        <div class="section-head"><h2>Center performance score</h2><span class="hint">Attendance 30% · LMS 20% · Assessment 20% · Wadhwani 15% · Documentation 10% · Residential 5%</span></div>
+        <div class="chart-grid">
+          <div class="panel panel-pad">
+            <h3 style="font-size:13.5px;margin-bottom:10px;">Ranking</h3>
+            <div id="performance-ranking"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Live alerts</h3></div>
+            <div class="panel-pad"><div class="alert-list" id="alert-list"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TEAM & MOBILIZATION -->
+      <section class="tab-panel" id="panel-team">
+        <div class="section-head"><h2>Mobilization status</h2><span class="hint">Students mobilized vs completed for the upcoming batch</span></div>
+        <div id="mobilization-container"></div>
+
+        <div class="section-head"><h2>Trainer performance</h2><span class="hint">Attendance 30% · LMS 20% · Wadhwani 20% · On-time batch commencement 30%</span></div>
+        <div class="team-grid" id="team-grid-trainers"></div>
+
+        <div class="section-head"><h2>Field officer performance</h2><span class="hint">Batch-to-batch gap adherence + mobilization progress (one role covers both)</span></div>
+        <div class="team-grid" id="team-grid-fieldofficers"></div>
+      </section>
+
+      <!-- REPORTS -->
+      <section class="tab-panel" id="panel-reports">
+        <div class="section-head"><h2>Reports</h2><span class="hint">Generated from the live sheet data currently loaded</span></div>
+        <div class="chart-grid">
+          <div class="panel panel-pad">
+            <h3 style="font-size:13.5px;margin-bottom:12px;">Daily / Weekly / Monthly</h3>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <button class="btn" data-report="daily"><i data-icon="download"></i> Daily attendance report (CSV)</button>
+              <button class="btn" data-report="weekly"><i data-icon="download"></i> Weekly attendance report (CSV)</button>
+              <button class="btn" data-report="monthly"><i data-icon="download"></i> Monthly attendance report (CSV)</button>
+            </div>
+          </div>
+          <div class="panel panel-pad">
+            <h3 style="font-size:13.5px;margin-bottom:12px;">Center &amp; batch</h3>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <button class="btn" data-report="center-csv"><i data-icon="download"></i> Center summary (CSV)</button>
+              <button class="btn" data-report="center-xls"><i data-icon="download"></i> Center summary (Excel)</button>
+              <button class="btn" data-report="batch-csv"><i data-icon="download"></i> Batch report (CSV)</button>
+              <button class="btn" data-report="batch-xls"><i data-icon="download"></i> Batch report (Excel)</button>
+              <button class="btn btn-accent" data-report="pdf"><i data-icon="download"></i> Print / save dashboard as PDF</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">© Don Bosco Tech Society - Tamil Nadu State Operations</footer>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
