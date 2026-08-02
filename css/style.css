@@ -410,3 +410,43 @@ table.data-table tbody tr:hover{ background:var(--surface-2); }
 @keyframes fadeInUp{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
 @keyframes slideDown{ from{ opacity:0; transform:translateY(-8px); } to{ opacity:1; transform:translateY(0); } }
 tr.reveal-row{ animation:fadeInUp .25s ease both; }
+
+/* ---------- Mark Attendance: present/absent toggle buttons ---------- */
+.status-toggle{ border:none; border-radius:20px; padding:6px 16px; font-size:12px; font-weight:700; cursor:pointer;
+  transition:transform .12s ease, background .15s ease; }
+.status-toggle:hover{ transform:translateY(-1px); }
+.status-toggle.present{ background:rgba(31,146,84,.14); color:var(--db-green); }
+.status-toggle.absent{ background:rgba(214,69,69,.14); color:var(--db-red); }
+
+/* ---------- Opening / transition splash screen ---------- */
+.splash-screen{
+  position:fixed; inset:0; z-index:9999;
+  background:linear-gradient(135deg, var(--db-blue) 0%, #001f3f 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
+  transition:opacity .45s ease, visibility .45s ease;
+}
+.splash-screen.hide{ opacity:0; visibility:hidden; pointer-events:none; }
+.splash-logo-wrap{ position:relative; width:88px; height:88px; display:flex; align-items:center; justify-content:center; }
+.splash-logo-wrap::after{
+  content:""; position:absolute; inset:-9px; border-radius:24px;
+  border:3px solid rgba(255,255,255,.22); border-top-color:#fff;
+  animation:splash-spin .9s linear infinite;
+}
+.splash-logo{
+  width:72px; height:72px; border-radius:18px; box-shadow:0 12px 34px rgba(0,0,0,.35);
+  animation:splash-pop .6s cubic-bezier(.34,1.56,.64,1) both;
+  position:relative; z-index:1; background:#fff;
+}
+.splash-title{
+  color:#fff; font-family:var(--font-display); font-size:21px; font-weight:800; letter-spacing:.02em;
+  animation:splash-fade .5s ease .18s both; margin-top:6px;
+}
+.splash-sub{
+  color:rgba(255,255,255,.72); font-size:12.5px; animation:splash-fade .5s ease .32s both;
+}
+@keyframes splash-pop{ 0%{ opacity:0; transform:scale(.35) rotate(-10deg); } 100%{ opacity:1; transform:scale(1) rotate(0); } }
+@keyframes splash-fade{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+@keyframes splash-spin{ to{ transform:rotate(360deg); } }
+@media (prefers-reduced-motion: reduce){
+  .splash-logo, .splash-title, .splash-sub, .splash-logo-wrap::after{ animation:none !important; }
+}
