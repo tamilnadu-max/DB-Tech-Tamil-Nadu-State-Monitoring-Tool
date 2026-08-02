@@ -8,6 +8,15 @@ const Layout = {
     const session = Auth.requireSession();
     if(!session) return null;
 
+    const splash = document.getElementById("splash-screen");
+    if(splash){
+      const roleDef = APP_CONFIG.ROLES[session.role];
+      const subEl = splash.querySelector(".splash-sub");
+      if(subEl && roleDef) subEl.textContent = session.role === "center" ? session.center : roleDef.label;
+      const minDisplay = 650; // ms — long enough to read as an intentional brand moment, not a flicker
+      setTimeout(() => splash.classList.add("hide"), minDisplay);
+    }
+
     const roleBox = document.getElementById("role-box");
     if(roleBox){
       const roleDef = APP_CONFIG.ROLES[session.role];
