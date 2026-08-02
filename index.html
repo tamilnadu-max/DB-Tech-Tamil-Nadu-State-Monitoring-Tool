@@ -12,6 +12,12 @@
 </head>
 <body>
 
+<div id="splash-screen" class="splash-screen">
+  <div class="splash-logo-wrap"><img src="assets/logo.png" alt="DB Tech" class="splash-logo"></div>
+  <div class="splash-title">DB Tech Tamil Nadu</div>
+  <div class="splash-sub">Live Operations Dashboard</div>
+</div>
+
 <div class="login-wrap">
   <div class="login-card">
     <img src="assets/logo.png" alt="DB Tech logo">
@@ -60,6 +66,9 @@
   document.getElementById("ic-state").innerHTML = Icons.shield;
   document.getElementById("ic-center").innerHTML = Icons.building;
 
+  const splash = document.getElementById("splash-screen");
+  setTimeout(() => splash.classList.add("hide"), 650);
+
   const centerSelect = document.getElementById("center-select");
   APP_CONFIG.CENTERS.forEach(c => {
     const opt = document.createElement("option");
@@ -71,14 +80,21 @@
   document.querySelectorAll(".role-option").forEach(card => {
     card.addEventListener("click", () => {
       const role = card.dataset.role;
+      let session;
       if(role === "center"){
         const center = centerSelect.value;
         if(!center){ centerSelect.focus(); return; }
-        Auth.setSession({ role: "center", center });
+        session = { role: "center", center };
       }else{
-        Auth.setSession({ role });
+        session = { role };
       }
-      window.location.href = "dashboard.html";
+      Auth.setSession(session);
+      // Show the branded transition splash again while switching into the
+      // chosen role's dashboard, instead of jumping straight to a blank page.
+      const roleDef = APP_CONFIG.ROLES[role];
+      splash.querySelector(".splash-sub").textContent = role === "center" ? center : roleDef.label;
+      splash.classList.remove("hide");
+      setTimeout(() => { window.location.href = "dashboard.html"; }, 550);
     });
   });
 
