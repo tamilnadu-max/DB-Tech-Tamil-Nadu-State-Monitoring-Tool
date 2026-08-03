@@ -64,9 +64,9 @@
       <td class="${b.overallAttendancePct < 85 ? 'attendance-below-guideline' : ''}">${Utils.fmtPct(b.overallAttendancePct)}${b.overallAttendancePct < 85 ? ' ⚠️' : ''}</td>
       <td>${Utils.fmtInt(b.dropouts)}</td>
       <td>${Utils.pillYesNo(b.lms1Completed)}</td><td>${Utils.pillYesNo(b.lms2Completed)}</td><td>${Utils.pillYesNo(b.assessmentCompleted)}</td>
-      <td>${Utils.fmtInt(b.residentialCount)}</td><td>${Utils.escapeHtml(b.wadhwaniStatus||"—")}</td>
+      <td>${Utils.fmtInt(b.residentialCount)}</td><td>${Utils.fmtInt(b.placementReadyCount)}</td><td>${Utils.escapeHtml(b.wadhwaniStatus||"—")}</td>
       <td>${Utils.escapeHtml(b.remarks||"—")}</td>
-    </tr>`).join("") || `<tr><td colspan="18" class="empty-state">No batches match these filters.</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="19" class="empty-state">No batches match these filters.</td></tr>`;
     els.rowCount.textContent = `${rows.length} of ${allRows.length} batches`;
   }
 
@@ -92,7 +92,7 @@
       {key:"startDate",label:"Start"},{key:"endDate",label:"End"},{key:"trainer",label:"Trainer"},{key:"center",label:"Center"},
       {key:"enrolled",label:"Enrolled"},{key:"presentToday",label:"Present"},{key:"absentToday",label:"Absent"},
       {key:"attendancePct",label:"Today's Attendance %"},{key:"overallAttendancePct",label:"Overall Attendance %"},
-      {key:"dropouts",label:"Dropouts"},{key:"residentialCount",label:"Residential"},
+      {key:"dropouts",label:"Dropouts"},{key:"residentialCount",label:"Residential"},{key:"placementReadyCount",label:"Placement Ready"},
       {key:"wadhwaniStatus",label:"Wadhwani"},{key:"remarks",label:"Remarks"}
     ], `batches-${new Date().toISOString().slice(0,10)}.csv`);
   });
