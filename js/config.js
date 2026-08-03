@@ -9,7 +9,7 @@ const APP_CONFIG = {
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbywej2oOS8CZ-Gym6cmyPPkxW8SlZ5fc6MIn8zU8LxUfQTFAfdxXY_qOzv4nDXglHL8Qg/exec",
 
   // Auto-refresh cadence in seconds.
-  REFRESH_SECONDS: 60,
+  REFRESH_SECONDS: 300,
 
   // The five centers this dashboard is scoped to. Names must match the "Centers"
   // sheet tab exactly — the app never invents a center that isn't in the sheet.
