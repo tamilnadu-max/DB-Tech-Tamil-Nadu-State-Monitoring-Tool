@@ -39,7 +39,7 @@
     { key:"lms2Completed", label:"LMS 2 Completed", icon:"bookOpen" },
     { key:"assessmentCompleted", label:"3rd Party Assessment Completed", icon:"clipboard" },
     { key:"residentialStudents", label:"Residential Students", icon:"bed" },
-    { key:"placementReady", label:"Placement Ready Students", icon:"award", cls:"good" },
+    { key:"placed candidates", label:"Placed candidates", icon:"award", cls:"good" },
     { key:"wadhwaniRegistered", label:"Wadhwani Registered", icon:"users" },
     { key:"wadhwaniS1", label:"Wadhwani Session 1 Completed", icon:"check" },
     { key:"wadhwaniS2", label:"Wadhwani Session 2 Completed", icon:"check" },
