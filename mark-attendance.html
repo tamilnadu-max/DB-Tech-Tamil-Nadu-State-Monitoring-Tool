@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark Attendance — DB Tech Tamil Nadu</title>
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="splash-screen" class="splash-screen">
+  <div class="splash-logo-wrap"><img src="assets/logo.png" alt="DB Tech" class="splash-logo"></div>
+  <div class="splash-title">DB Tech Tamil Nadu</div>
+  <div class="splash-sub">Live Operations Dashboard</div>
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="DB Tech">
+      <div class="name">DB Tech<small>Tamil Nadu Live Ops</small></div>
+    </div>
+    <nav class="nav">
+      <a href="dashboard.html"><i data-icon="grid"></i> Overview</a>
+      <a href="batch.html"><i data-icon="layers"></i> Batches</a>
+      <a href="student.html"><i data-icon="users"></i> Students</a>
+      <a href="mark-attendance.html" class="active"><i data-icon="check"></i> Mark Attendance</a>
+    </nav>
+    <div class="role-box" id="role-box"></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn menu-toggle" id="menu-toggle" aria-label="Menu"><i data-icon="menu"></i></button>
+        <div class="title-block">
+          <h1>Mark Attendance</h1>
+          <div class="sub" id="last-updated">Connecting to live sheet…</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="clock" id="live-clock"></div>
+        <button class="btn btn-primary" id="refresh-btn"><i data-icon="refresh"></i> Refresh</button>
+      </div>
+    </header>
+    <div class="pulse-strip" id="pulse-strip"><div class="fill" id="pulse-fill"></div></div>
+
+    <main class="content">
+      <div class="panel panel-pad" style="margin-bottom:18px;">
+        <div class="filter-bar" style="margin-bottom:0;">
+          <select id="f-center"></select>
+          <select id="f-batch"><option value="">Select a batch</option></select>
+          <input type="date" id="f-date">
+          <button class="btn" id="mark-all-present">Mark all present</button>
+          <button class="btn" id="mark-all-absent">Mark all absent</button>
+        </div>
+      </div>
+
+      <div id="attendance-container"></div>
+    </main>
+
+    <footer class="site-footer">© Don Bosco Tech Society - Tamil Nadu State Operations</footer>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/mark-attendance.js"></script>
+</body>
+</html>
