@@ -60,11 +60,13 @@
       <td>${Utils.escapeHtml(b.startDate)}</td><td>${Utils.escapeHtml(b.endDate)}</td><td>${Utils.escapeHtml(b.trainer)}</td>
       <td><a href="center.html?name=${encodeURIComponent(b.center)}" style="color:var(--db-blue);font-weight:600;">${Utils.escapeHtml(b.center)}</a></td>
       <td>${Utils.fmtInt(b.enrolled)}</td><td>${Utils.fmtInt(b.presentToday)}</td><td>${Utils.fmtInt(b.absentToday)}</td>
-      <td>${Utils.fmtPct(b.attendancePct)}</td><td>${Utils.fmtInt(b.dropouts)}</td>
+      <td>${Utils.fmtPct(b.attendancePct)}</td>
+      <td class="${b.overallAttendancePct < 85 ? 'attendance-below-guideline' : ''}">${Utils.fmtPct(b.overallAttendancePct)}${b.overallAttendancePct < 85 ? ' ⚠️' : ''}</td>
+      <td>${Utils.fmtInt(b.dropouts)}</td>
       <td>${Utils.pillYesNo(b.lms1Completed)}</td><td>${Utils.pillYesNo(b.lms2Completed)}</td><td>${Utils.pillYesNo(b.assessmentCompleted)}</td>
       <td>${Utils.fmtInt(b.residentialCount)}</td><td>${Utils.escapeHtml(b.wadhwaniStatus||"—")}</td>
       <td>${Utils.escapeHtml(b.remarks||"—")}</td>
-    </tr>`).join("") || `<tr><td colspan="17" class="empty-state">No batches match these filters.</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="18" class="empty-state">No batches match these filters.</td></tr>`;
     els.rowCount.textContent = `${rows.length} of ${allRows.length} batches`;
   }
 
@@ -89,7 +91,8 @@
       {key:"batchId",label:"Batch ID"},{key:"course",label:"Course"},{key:"project",label:"Project"},
       {key:"startDate",label:"Start"},{key:"endDate",label:"End"},{key:"trainer",label:"Trainer"},{key:"center",label:"Center"},
       {key:"enrolled",label:"Enrolled"},{key:"presentToday",label:"Present"},{key:"absentToday",label:"Absent"},
-      {key:"attendancePct",label:"Attendance %"},{key:"dropouts",label:"Dropouts"},{key:"residentialCount",label:"Residential"},
+      {key:"attendancePct",label:"Today's Attendance %"},{key:"overallAttendancePct",label:"Overall Attendance %"},
+      {key:"dropouts",label:"Dropouts"},{key:"residentialCount",label:"Residential"},
       {key:"wadhwaniStatus",label:"Wadhwani"},{key:"remarks",label:"Remarks"}
     ], `batches-${new Date().toISOString().slice(0,10)}.csv`);
   });
