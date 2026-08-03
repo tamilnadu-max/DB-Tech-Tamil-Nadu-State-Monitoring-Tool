@@ -350,12 +350,20 @@
     };
     return {
       ...data, centers, batches, students, kpis,
-      attendance: {
-        ...data.attendance,
-        byCenter: (data.attendance.byCenter||[]).filter(c=>c.center===center),
-        byBatch: (data.attendance.byBatch||[]).filter(b=>b.center===center),
-        heatmap: (data.attendance.heatmap||[]).filter(h=>h.center===center)
-      },
+      attendance: (() => {
+        const centerHeatmap = (data.attendance.heatmap||[]).filter(h=>h.center===center).sort((a,b)=>a.date.localeCompare(b.date));
+        return {
+          today: c0.attendancePct ?? 0,
+          yesterday: c0.attendancePct ?? 0,
+          activePct: c0.attendancePct ?? 0,
+          completedPct: 0,
+          weeklyTrend: centerHeatmap.map(h => ({ date: h.date, pct: h.pct })).slice(-7),
+          monthlyTrend: centerHeatmap.map(h => ({ date: h.date, pct: h.pct })).slice(-30),
+          byCenter: (data.attendance.byCenter||[]).filter(c=>c.center===center),
+          byBatch: (data.attendance.byBatch||[]).filter(b=>b.center===center),
+          heatmap: centerHeatmap
+        };
+      })(),
       wadhwani: { ...data.wadhwani, byCenter: (data.wadhwani.byCenter||[]).filter(c=>c.center===center) },
       residential: { ...data.residential, byCenter: (data.residential.byCenter||[]).filter(c=>c.center===center) },
       performance: {
