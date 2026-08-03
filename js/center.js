@@ -83,8 +83,10 @@
     Utils.qs("#table-center-batches tbody").innerHTML = batches.map(b => `<tr>
       <td>${Utils.escapeHtml(b.batchId)}</td><td>${Utils.escapeHtml(b.course)}</td><td>${Utils.escapeHtml(b.trainer)}</td>
       <td>${Utils.escapeHtml(b.startDate)}</td><td>${Utils.escapeHtml(b.endDate)}</td>
-      <td>${Utils.fmtInt(b.enrolled)}</td><td>${Utils.fmtInt(b.presentToday)}</td><td>${Utils.fmtPct(b.attendancePct)}</td><td>${Utils.fmtInt(b.dropouts)}</td>
-    </tr>`).join("") || `<tr><td colspan="9" class="empty-state">No batches found for this center.</td></tr>`;
+      <td>${Utils.fmtInt(b.enrolled)}</td><td>${Utils.fmtInt(b.presentToday)}</td><td>${Utils.fmtPct(b.attendancePct)}</td>
+      <td class="${b.overallAttendancePct < 85 ? 'attendance-below-guideline' : ''}">${Utils.fmtPct(b.overallAttendancePct)}${b.overallAttendancePct < 85 ? ' ⚠️' : ''}</td>
+      <td>${Utils.fmtInt(b.dropouts)}</td>
+    </tr>`).join("") || `<tr><td colspan="10" class="empty-state">No batches found for this center.</td></tr>`;
 
     // Students table
     Utils.qs("#table-center-students tbody").innerHTML = students.map(s => `<tr>
