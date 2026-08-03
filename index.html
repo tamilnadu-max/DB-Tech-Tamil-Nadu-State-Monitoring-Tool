@@ -81,10 +81,11 @@
     card.addEventListener("click", () => {
       const role = card.dataset.role;
       let session;
+      let selectedCenter = "";
       if(role === "center"){
-        const center = centerSelect.value;
-        if(!center){ centerSelect.focus(); return; }
-        session = { role: "center", center };
+        selectedCenter = centerSelect.value;
+        if(!selectedCenter){ centerSelect.focus(); return; }
+        session = { role: "center", center: selectedCenter };
       }else{
         session = { role };
       }
@@ -92,7 +93,7 @@
       // Show the branded transition splash again while switching into the
       // chosen role's dashboard, instead of jumping straight to a blank page.
       const roleDef = APP_CONFIG.ROLES[role];
-      splash.querySelector(".splash-sub").textContent = role === "center" ? center : roleDef.label;
+      splash.querySelector(".splash-sub").textContent = role === "center" ? selectedCenter : roleDef.label;
       splash.classList.remove("hide");
       setTimeout(() => { window.location.href = "dashboard.html"; }, 550);
     });
