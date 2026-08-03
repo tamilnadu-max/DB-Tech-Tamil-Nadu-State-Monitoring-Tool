@@ -79,7 +79,7 @@ const Api = (function(){
       countdown -= 1;
       tickSubscribers.forEach(fn => fn(countdown));
       if(countdown <= 0) refresh();
-    }, 1000);
+    }, 1800);
   }
 
   return {
