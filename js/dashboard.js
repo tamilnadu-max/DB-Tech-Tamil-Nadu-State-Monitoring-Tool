@@ -479,35 +479,6 @@
     Icons.hydrate(el);
   }
 
-  function teamCardHtml(roleLabel, name, center, score, rating, metaHtml){
-    return `<div class="team-card">
-      <span class="role-tag">${Utils.escapeHtml(roleLabel)}</span>
-      <h5>${Utils.escapeHtml(name || "—")}</h5>
-      <div class="hint">${Utils.escapeHtml(center || "")}</div>
-      <div class="team-score ${Utils.scoreColor(score)}">${score.toFixed(1)}</div>
-      ${Utils.starRating(rating)}
-      <div class="team-meta">${metaHtml}</div>
-    </div>`;
-  }
-
-  function renderTeamPerformance(tp){
-    const trainersEl = document.getElementById("team-grid-trainers");
-    const fieldOfficersEl = document.getElementById("team-grid-fieldofficers");
-    if(!trainersEl) return;
-
-    trainersEl.innerHTML = (tp.trainers||[]).map(t => teamCardHtml(
-      "Trainer", t.trainer, `${t.center} · ${t.batchCount} batch(es)`, t.score, t.rating,
-      `Attendance ${Utils.fmtPct(t.attendancePct)} · LMS ${Utils.fmtPct(t.lmsPct)} · Wadhwani ${Utils.fmtPct(t.wadhwaniPct)} · On-time ${Utils.fmtPct(t.onTimePct)}`
-    )).join("") || `<div class="empty-state">No trainer data yet — add a Trainer column value on your batches.</div>`;
-
-    fieldOfficersEl.innerHTML = (tp.fieldOfficers||[]).map(f => teamCardHtml(
-      "Field Officer", f.fieldOfficer, f.center, f.score, f.rating,
-      `Batch-gap score ${Utils.fmtPct(f.gapScore)}${f.daysOverdue ? ` (overdue ${f.daysOverdue}d)` : ""} · Mobilization ${Utils.fmtPct(f.mobilizationScore)}`
-    )).join("") || `<div class="empty-state">No field officer assigned yet — add a FieldOfficer column value on the Centers tab.</div>`;
-
-    Icons.hydrate(trainersEl); Icons.hydrate(fieldOfficersEl);
-  }
-
   async function submitMobilization(center, mobilized, completed, btn){
     btn.disabled = true;
     try{
@@ -575,7 +546,6 @@
     data.kpis.completedAttendancePct = data.attendance.completedPct;
 
     renderOverdueBanner(data.overdue || []);
-    renderTeamPerformance(data.teamPerformance || { trainers:[], mobilizers:[], fieldOfficers:[] });
     renderMobilization(data.mobilization || [], sessionScoped.centers || []);
 
     renderKpiGrid(document.getElementById("kpi-grid"), KPI_DEFS, data.kpis);
