@@ -1,273 +1,82 @@
-/**
- * mark-attendance.js
- * Lets the center team mark Present/Absent for every student in one of
- * their own center's ACTIVE batches (active status is read straight from
- * the Batches tab, auto-corrected server-side if the end date has passed),
- * for a chosen date, then bulk-submits it to the Attendance tab. Also lets
- * them update each student's Status (Active/Completed/Dropout) and
- * Placement-ready flag for the same batch.
- */
-(function(){
-  const session = Layout.init();
-  if(!session) return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark Attendance — DB Tech Tamil Nadu</title>
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
-  const els = {
-    center: document.getElementById("f-center"),
-    batch: document.getElementById("f-batch"),
-    date: document.getElementById("f-date"),
-    markAllPresent: document.getElementById("mark-all-present"),
-    markAllAbsent: document.getElementById("mark-all-absent"),
-    batchSummary: document.getElementById("batch-summary"),
-    container: document.getElementById("attendance-container"),
-    placementContainer: document.getElementById("placement-container")
-  };
+<div id="splash-screen" class="splash-screen">
+  <div class="splash-logo-wrap"><img src="assets/logo.png" alt="DB Tech" class="splash-logo"></div>
+  <div class="splash-title">DB Tech Tamil Nadu</div>
+  <div class="splash-sub">Live Operations Dashboard</div>
+</div>
 
-  const todayIso = new Date().toLocaleDateString("en-CA");
-  els.date.value = todayIso;
-  els.date.max = todayIso;
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="DB Tech">
+      <div class="name">DB Tech<small>Tamil Nadu Live Ops</small></div>
+    </div>
+    <nav class="nav">
+      <a href="dashboard.html"><i data-icon="grid"></i> Overview</a>
+      <a href="batch.html"><i data-icon="layers"></i> Batches</a>
+      <a href="student.html"><i data-icon="users"></i> Students</a>
+      <a href="mark-attendance.html" class="active"><i data-icon="check"></i> Mark Attendance</a>
+    </nav>
+    <div class="role-box" id="role-box"></div>
+  </aside>
 
-  // A single transient failure (brief network blip, or Google momentarily
-  // rate-limiting a very active Apps Script deployment) shouldn't fail an
-  // entire attendance/placement submission outright — retry once.
-  async function postWithRetry(payload){
-    async function attempt(){
-      const res = await fetch(APP_CONFIG.APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
-      if(!res.ok) throw new Error("API responded with status " + res.status);
-      return res.json();
-    }
-    try{
-      return await attempt();
-    }catch(err){
-      await new Promise(r => setTimeout(r, 1200));
-      return await attempt();
-    }
-  }
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn menu-toggle" id="menu-toggle" aria-label="Menu"><i data-icon="menu"></i></button>
+        <div class="title-block">
+          <h1>Mark Attendance</h1>
+          <div class="sub" id="last-updated">Connecting to live sheet…</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="clock" id="live-clock"></div>
+        <button class="btn btn-primary" id="refresh-btn"><i data-icon="refresh"></i> Refresh</button>
+      </div>
+    </header>
+    <div class="pulse-strip" id="pulse-strip"><div class="fill" id="pulse-fill"></div></div>
 
-  let latestData = null;
-  let currentStudents = []; // attendance rows: [{studentId, studentName, status}]
-  let currentPlacementStudents = []; // [{studentId, studentName, status, placementReady}]
+    <main class="content">
+      <div class="panel panel-pad" style="margin-bottom:18px;">
+        <div class="filter-bar" style="margin-bottom:0;">
+          <select id="f-center"></select>
+          <select id="f-batch"><option value="">Select a batch</option></select>
+          <input type="date" id="f-date">
+          <button class="btn" id="mark-all-present">Mark all present</button>
+          <button class="btn" id="mark-all-absent">Mark all absent</button>
+        </div>
+      </div>
 
-  function populateCenterSelect(){
-    const allowed = Auth.allowedCenters();
-    els.center.innerHTML = allowed.map(c => `<option value="${Utils.escapeHtml(c)}">${Utils.escapeHtml(c)}</option>`).join("");
-    if(session.role === "center"){ els.center.value = session.center; els.center.disabled = true; }
-  }
+      <div id="batch-summary"></div>
+      <div id="attendance-container"></div>
 
-  function populateBatchSelect(){
-    if(!latestData) return;
-    const center = els.center.value;
-    // Only ACTIVE batches (per the Batches tab Status, auto-corrected if the
-    // end date has already passed) — completed/closed batches don't take
-    // new attendance here.
-    const activeBatches = (latestData.batches||[]).filter(b => b.center === center && b.status === "Active");
-    els.batch.innerHTML = `<option value="">Select a batch</option>` +
-      activeBatches.map(b => `<option value="${Utils.escapeHtml(b.batchId)}">${Utils.escapeHtml(b.course)} — ${Utils.escapeHtml(b.batchId)}</option>`).join("");
-    loadStudentsForBatch();
-    loadPlacementStudents();
-    renderBatchSummary();
-  }
+      <div class="section-head" style="margin-top:26px;"><h2>Update Placement &amp; Dropout</h2><span class="hint">Update per-student Status and Placement-ready flag for the selected batch</span></div>
+      <div id="placement-container"></div>
+    </main>
 
-  function renderBatchSummary(){
-    const batchId = els.batch.value;
-    if(!batchId){ els.batchSummary.innerHTML = ""; return; }
-    const batch = (latestData.batches||[]).find(b => b.batchId === batchId);
-    if(!batch){ els.batchSummary.innerHTML = ""; return; }
-    els.batchSummary.innerHTML = `<div class="mini-grid" style="margin-bottom:16px;">
-      <div class="mini-stat">Enrolled<b>${Utils.fmtInt(batch.enrolled)}</b></div>
-      <div class="mini-stat">Today's Attendance %<b>${Utils.fmtPct(batch.attendancePct)}</b></div>
-      <div class="mini-stat">Overall Attendance %<b class="${batch.overallAttendancePct < 85 ? 'attendance-below-guideline' : ''}">${Utils.fmtPct(batch.overallAttendancePct)}${batch.overallAttendancePct < 85 ? ' ⚠️' : ''}</b></div>
-      <div class="mini-stat">Dropouts<b>${Utils.fmtInt(batch.dropouts)}</b></div>
-    </div>`;
-  }
+    <footer class="site-footer">© Don Bosco Tech Society - Tamil Nadu State Operations</footer>
+  </div>
+</div>
 
-  // ---------------- Attendance marking ----------------
-
-  function loadStudentsForBatch(){
-    const batchId = els.batch.value;
-    if(!batchId){
-      currentStudents = [];
-      renderTable();
-      return;
-    }
-    const students = (latestData.students||[]).filter(s => s.batchId === batchId && s.status !== "Dropout");
-    currentStudents = students.map(s => ({ studentId: s.studentId, studentName: s.studentName, status: "Present" }));
-    renderTable();
-  }
-
-  function renderTable(){
-    if(!els.batch.value){
-      els.container.innerHTML = `<div class="panel panel-pad empty-state">Select a batch to load its students.</div>`;
-      return;
-    }
-    if(!currentStudents.length){
-      els.container.innerHTML = `<div class="panel panel-pad empty-state">No active students found in this batch.</div>`;
-      return;
-    }
-
-    els.container.innerHTML = `<div class="panel panel-pad">
-      <div class="hint" style="margin-bottom:10px;">Marking attendance for <b>${Utils.escapeHtml(els.date.value)}</b> — defaults to Present, tap to mark Absent.</div>
-      <div class="table-wrap"><table class="data-table">
-        <thead><tr><th>Student ID</th><th>Name</th><th>Status</th></tr></thead>
-        <tbody id="attendance-rows">
-          ${currentStudents.map((s,i) => `<tr>
-            <td>${Utils.escapeHtml(s.studentId)}</td>
-            <td>${Utils.escapeHtml(s.studentName)}</td>
-            <td><button type="button" class="status-toggle ${s.status==="Present"?"present":"absent"}" data-idx="${i}">${s.status}</button></td>
-          </tr>`).join("")}
-        </tbody>
-      </table></div>
-      <button class="btn btn-primary" id="submit-attendance" style="margin-top:14px;"><i data-icon="check"></i> Submit attendance for ${Utils.fmtInt(currentStudents.length)} students</button>
-      <div id="submit-progress" class="hint" style="margin-top:10px;"></div>
-    </div>`;
-    Icons.hydrate(els.container);
-
-    Utils.qsa(".status-toggle", els.container).forEach(btn => {
-      btn.addEventListener("click", () => {
-        const idx = Number(btn.dataset.idx);
-        currentStudents[idx].status = currentStudents[idx].status === "Present" ? "Absent" : "Present";
-        btn.textContent = currentStudents[idx].status;
-        btn.className = "status-toggle " + (currentStudents[idx].status === "Present" ? "present" : "absent");
-      });
-    });
-
-    document.getElementById("submit-attendance").addEventListener("click", submitAttendance);
-  }
-
-  async function submitAttendance(){
-    const btn = document.getElementById("submit-attendance");
-    const progressEl = document.getElementById("submit-progress");
-    btn.disabled = true;
-    progressEl.textContent = "Submitting…";
-
-    const rows = currentStudents.map(s => ({
-      studentId: s.studentId, center: els.center.value, batchId: els.batch.value,
-      date: els.date.value, status: s.status
-    }));
-
-    try{
-      const json = await postWithRetry({ action: "markAttendance", rows });
-      if(!json.ok) throw new Error(json.error || "Submit failed");
-      progressEl.textContent = `Saved — ${json.inserted} new, ${json.updated} updated.`;
-      Utils.toast("Attendance saved", "ok");
-      Api.refreshNow();
-    }catch(err){
-      progressEl.textContent = `Failed: ${err.message}`;
-      btn.disabled = false;
-    }
-  }
-
-  // ---------------- Placement & Dropout update ----------------
-
-  const STUDENT_STATUSES = ["Active", "Completed", "Dropout"];
-
-  function loadPlacementStudents(){
-    const batchId = els.batch.value;
-    if(!batchId){
-      currentPlacementStudents = [];
-      renderPlacementTable();
-      return;
-    }
-    // Includes every student in the batch regardless of current status, so a
-    // mistaken Dropout can be corrected back to Active/Completed here too.
-    const students = (latestData.students||[]).filter(s => s.batchId === batchId);
-    currentPlacementStudents = students.map(s => ({
-      studentId: s.studentId, studentName: s.studentName,
-      status: s.status || "Active", placementReady: !!s.placementReady
-    }));
-    renderPlacementTable();
-  }
-
-  function renderPlacementTable(){
-    if(!els.batch.value){
-      els.placementContainer.innerHTML = `<div class="panel panel-pad empty-state">Select a batch to load its students.</div>`;
-      return;
-    }
-    if(!currentPlacementStudents.length){
-      els.placementContainer.innerHTML = `<div class="panel panel-pad empty-state">No students found in this batch.</div>`;
-      return;
-    }
-
-    els.placementContainer.innerHTML = `<div class="panel panel-pad">
-      <div class="table-wrap"><table class="data-table">
-        <thead><tr><th>Student ID</th><th>Name</th><th>Status</th><th>Placement Ready</th></tr></thead>
-        <tbody id="placement-rows">
-          ${currentPlacementStudents.map((s,i) => `<tr>
-            <td>${Utils.escapeHtml(s.studentId)}</td>
-            <td>${Utils.escapeHtml(s.studentName)}</td>
-            <td>
-              <select class="placement-status-select" data-idx="${i}">
-                ${STUDENT_STATUSES.map(st => `<option value="${st}" ${s.status===st?"selected":""}>${st}</option>`).join("")}
-              </select>
-            </td>
-            <td><button type="button" class="status-toggle ${s.placementReady ? "present" : "absent"}" data-idx="${i}">${s.placementReady ? "Yes" : "No"}</button></td>
-          </tr>`).join("")}
-        </tbody>
-      </table></div>
-      <button class="btn btn-primary" id="submit-placement" style="margin-top:14px;"><i data-icon="check"></i> Save changes for ${Utils.fmtInt(currentPlacementStudents.length)} students</button>
-      <div id="placement-progress" class="hint" style="margin-top:10px;"></div>
-    </div>`;
-    Icons.hydrate(els.placementContainer);
-
-    Utils.qsa(".placement-status-select", els.placementContainer).forEach(sel => {
-      sel.addEventListener("change", () => {
-        currentPlacementStudents[Number(sel.dataset.idx)].status = sel.value;
-      });
-    });
-    Utils.qsa(".status-toggle", els.placementContainer).forEach(btn => {
-      btn.addEventListener("click", () => {
-        const idx = Number(btn.dataset.idx);
-        currentPlacementStudents[idx].placementReady = !currentPlacementStudents[idx].placementReady;
-        btn.textContent = currentPlacementStudents[idx].placementReady ? "Yes" : "No";
-        btn.className = "status-toggle " + (currentPlacementStudents[idx].placementReady ? "present" : "absent");
-      });
-    });
-
-    document.getElementById("submit-placement").addEventListener("click", submitPlacement);
-  }
-
-  async function submitPlacement(){
-    const btn = document.getElementById("submit-placement");
-    const progressEl = document.getElementById("placement-progress");
-    btn.disabled = true;
-    progressEl.textContent = "Saving…";
-
-    const rows = currentPlacementStudents.map(s => ({
-      studentId: s.studentId, status: s.status, placementReady: s.placementReady
-    }));
-
-    try{
-      const json = await postWithRetry({ action: "updateStudents", rows });
-      if(!json.ok) throw new Error(json.error || "Save failed");
-      progressEl.textContent = `Saved — ${json.updated} student(s) updated${json.notFound ? `, ${json.notFound} not found` : ""}.`;
-      Utils.toast("Student details updated", "ok");
-      Api.refreshNow();
-    }catch(err){
-      progressEl.textContent = `Failed: ${err.message}`;
-      btn.disabled = false;
-    }
-  }
-
-  els.center.addEventListener("change", populateBatchSelect);
-  els.batch.addEventListener("change", () => { loadStudentsForBatch(); loadPlacementStudents(); renderBatchSummary(); });
-  els.date.addEventListener("change", () => { if(els.batch.value) loadStudentsForBatch(); });
-  els.markAllPresent.addEventListener("click", () => {
-    currentStudents.forEach(s => s.status = "Present");
-    renderTable();
-  });
-  els.markAllAbsent.addEventListener("click", () => {
-    currentStudents.forEach(s => s.status = "Absent");
-    renderTable();
-  });
-
-  populateCenterSelect();
-
-  Api.onData((data) => {
-    if(!data) return;
-    latestData = data;
-    populateBatchSelect();
-  });
-})();
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/mark-attendance.js"></script>
+</body>
+</html>
