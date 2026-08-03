@@ -4,7 +4,7 @@
  * It never caches the Apps Script API response itself — live data always
  * comes from the network.
  */
-const CACHE_NAME = "dbtech-shell-v3";
+const CACHE_NAME = "dbtech-shell-v4";
 const SHELL_FILES = [
   "index.html","dashboard.html","center.html","batch.html","student.html","mark-attendance.html",
   "css/style.css",
@@ -25,11 +25,22 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Network-first: always try to fetch the latest version from GitHub Pages
+// first, and only fall back to the cached copy if the network request fails
+// (i.e. genuinely offline). This is what makes new deployments show up
+// immediately instead of needing a hard refresh — the previous cache-first
+// strategy kept serving stale pages until a force reload.
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  // Never intercept the Apps Script API — always go to network for live data.
   if(url.hostname.includes("script.google.com")) return;
+  if(event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+    fetch(event.request)
+      .then(res => {
+        const resClone = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, resClone));
+        return res;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
