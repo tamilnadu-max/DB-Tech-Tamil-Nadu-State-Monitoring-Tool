@@ -450,3 +450,6 @@ tr.reveal-row{ animation:fadeInUp .25s ease both; }
 @media (prefers-reduced-motion: reduce){
   .splash-logo, .splash-title, .splash-sub, .splash-logo-wrap::after{ animation:none !important; }
 }
+
+/* ---------- Overall attendance guideline flag (below 85% minimum) ---------- */
+.attendance-below-guideline{ color:var(--db-red); font-weight:800; }
