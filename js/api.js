@@ -45,9 +45,21 @@ const Api = (function(){
     return json;
   }
 
+  // A single transient failure (brief network blip, or Google momentarily
+  // rate-limiting a very active Apps Script deployment) shouldn't surface as
+  // a visible error toast — retry once after a short pause before giving up.
+  async function fetchWithRetry(){
+    try{
+      return await fetchOnce();
+    }catch(err){
+      await new Promise(r => setTimeout(r, 1200));
+      return await fetchOnce();
+    }
+  }
+
   async function refresh(){
     try{
-      const data = await fetchOnce();
+      const data = await fetchWithRetry();
       saveCache(data);
       lastError = null;
       subscribers.forEach(fn => { try{ fn(data, null); }catch(e){ console.error(e); } });
